@@ -1,0 +1,10 @@
+C:\Users\bailey-tyreese.dawso\BatchExtensions\AudioControl\bin\Debug\AudioControl.exe.config
+C:\Users\bailey-tyreese.dawso\BatchExtensions\AudioControl\bin\Debug\AudioControl.exe
+C:\Users\bailey-tyreese.dawso\BatchExtensions\AudioControl\bin\Debug\AudioControl.pdb
+C:\Users\bailey-tyreese.dawso\BatchExtensions\AudioControl\bin\Debug\AudioSwitcher.AudioApi.CoreAudio.dll
+C:\Users\bailey-tyreese.dawso\BatchExtensions\AudioControl\bin\Debug\AudioSwitcher.AudioApi.dll
+C:\Users\bailey-tyreese.dawso\BatchExtensions\AudioControl\obj\Debug\AudioControl.csproj.AssemblyReference.cache
+C:\Users\bailey-tyreese.dawso\BatchExtensions\AudioControl\obj\Debug\AudioControl.csproj.CoreCompileInputs.cache
+C:\Users\bailey-tyreese.dawso\BatchExtensions\AudioControl\obj\Debug\AudioCon.86586570.Up2Date
+C:\Users\bailey-tyreese.dawso\BatchExtensions\AudioControl\obj\Debug\AudioControl.exe
+C:\Users\bailey-tyreese.dawso\BatchExtensions\AudioControl\obj\Debug\AudioControl.pdb
