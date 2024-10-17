@@ -25,7 +25,7 @@ namespace AudioControl
 
 		static int Main(string[] args)
 		{
-			if (args.Count() == 0 || args.Count() > 2)
+			if (args.Count() == 0 || args.Count() > 3)
 			{
 				Console.WriteLine("Invalid arguments provided, wrong number of arguments");
 				return RET_ERR_USER;
@@ -33,6 +33,7 @@ namespace AudioControl
 
 			string action;
 			string value;
+			string device = null;
 			// If its a set we need the value, otherwise we don't
 			try
 			{
@@ -40,12 +41,20 @@ namespace AudioControl
 				{
 					action = args[0].Trim();
 					value = args[1].Trim();
+					if (args.Length > 2)
+					{
+						device = args[2].Trim();
+					}
 				}
 				else if(args[0].ToUpper().StartsWith(ARG_START_GET))
 				{
 					action = args[0];
 					value = "";
-				}
+                    if (args.Length > 1)
+                    {
+                        device = args[1].Trim();
+                    }
+                }
 				else if (args[0].ToUpper() == HELP_ARG)
 				{
 					Console.WriteLine($"=== AudioControl {VERSION} ===");
@@ -61,7 +70,7 @@ All arguments are non case sensitive.
   /GetAll = Get all connected audio devices
   /GetVolume = Get current volume level of default audio device
   /SetDefault ""<Device name>"" = Set the default audio device
-  /SetVolume <Level> = Set the volume level of the default audio device
+  /SetVolume <Level> ""{Device}"" = Set the volume level of the default audio device, or any device by setting device
 Be careful when setting default. Its suggested to run /GetAll first to double check your device name is correct
 
 Developed by Bailey-Tyreese Dawson as part of BatchExtensions
@@ -132,7 +141,32 @@ Licensed under MIT License");
 					try
 					{
 						var controller = new AudioSwitcher.AudioApi.CoreAudio.CoreAudioController();
-						Console.WriteLine("Volume level is " + controller.DefaultPlaybackDevice.Volume);
+
+						if (device == null)
+						{
+							Console.WriteLine("Volume level is " + controller.DefaultPlaybackDevice.Volume);
+						}
+						else
+						{
+							bool found = false;
+                            foreach (var item in controller.GetPlaybackDevices())
+                            {
+                                if (item.State == AudioSwitcher.AudioApi.DeviceState.Disabled && item.State == AudioSwitcher.AudioApi.DeviceState.Unplugged && item.State == AudioSwitcher.AudioApi.DeviceState.NotPresent)
+                                    continue;
+
+                                if (item.FullName == device)
+                                {
+                                    Console.WriteLine("Volume level is " + item.Volume);
+									found = true;
+                                    break;
+                                }
+                            }
+
+							if(!found)
+							{
+								Console.WriteLine("Could not find device requested");
+							}
+                        }
 					}
 					catch (Exception ex)
 					{
@@ -168,8 +202,33 @@ Licensed under MIT License");
 							Console.WriteLine("Invalid volume level provided, must be between 0 and 100 inclusive.");
 							return RET_ERR_USER;
 						}
-						controller.DefaultPlaybackDevice.Volume = double.Parse(value);
-					}
+
+						if (device == null)
+						{
+							controller.DefaultPlaybackDevice.Volume = double.Parse(value);
+						}
+                        else
+                        {
+							bool found = false;
+                            foreach (var item in controller.GetPlaybackDevices())
+                            {
+                                if (item.State == AudioSwitcher.AudioApi.DeviceState.Disabled && item.State == AudioSwitcher.AudioApi.DeviceState.Unplugged && item.State == AudioSwitcher.AudioApi.DeviceState.NotPresent)
+                                    continue;
+
+                                if (item.FullName == device)
+                                {
+                                    item.Volume = value_converted;
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if (!found)
+                            {
+                                Console.WriteLine("Could not find device requested");
+                            }
+                        }
+                    }
 					catch (Exception ex)
 					{
 						Console.WriteLine("Failed to set the volume. " + ex.Message);
