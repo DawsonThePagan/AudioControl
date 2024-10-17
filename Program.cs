@@ -5,7 +5,7 @@ namespace AudioControl
 {
 	internal class Program
 	{
-		const string VERSION = "V1.1a";
+		const string VERSION = "V1.1";
 
 		// Return codes
 		const int RET_OK = 0;

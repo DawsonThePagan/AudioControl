@@ -18,3 +18,5 @@ D:\BatchExtensions\AudioControl\AudioControl\obj\Release\AudioControl.csproj.Cor
 D:\BatchExtensions\AudioControl\AudioControl\obj\Release\AudioCon.86586570.Up2Date
 D:\BatchExtensions\AudioControl\AudioControl\obj\Release\AudioControl.exe
 D:\BatchExtensions\AudioControl\AudioControl\obj\Release\AudioControl.pdb
+D:\BatchExtensions\AudioControl\AudioControl\bin\Release\LICENSE
+D:\BatchExtensions\AudioControl\AudioControl\bin\Release\README.md
