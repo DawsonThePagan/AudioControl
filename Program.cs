@@ -69,8 +69,8 @@ All arguments are non case sensitive.
   /GetDefault = Get the default audio output device
   /GetAll = Get all connected audio devices
   /GetVolume ""{Device}"" = Get current volume level of default audio device, or set device to get it by ID or full name
-  /SetDefault ""<Device>"" = Set the default audio device, can be set by ID or by full name
-  /SetVolume <Level> ""{Device}"" = Set the volume level of the default audio device, or set device to get it by ID or full name
+  /SetDefault ""<Device>"" = Set the default audio playback or capture device, can be set by ID or by full name. When setting capture device you must use ID for it to select the right device
+  /SetVolume <Level> ""{Device}"" = Set the volume level of the default audio device, or set device to get it by ID or full name. When setting capture device you must use ID for it to select the right device
 Be careful when setting default. Its suggested to run /GetAll first to double check your device name is correct
 
 Developed by Bailey-Tyreese Dawson as part of BatchExtensions
@@ -104,7 +104,7 @@ Licensed under MIT License");
 						}
 
 						int id = 0;
-                        foreach (var item in controller.GetPlaybackDevices())
+                        foreach (var item in controller.GetDevices())
 						{
 							if (item.State == AudioSwitcher.AudioApi.DeviceState.Disabled || item.State == AudioSwitcher.AudioApi.DeviceState.Unplugged || item.State == AudioSwitcher.AudioApi.DeviceState.NotPresent)
                                 continue;
@@ -112,15 +112,32 @@ Licensed under MIT License");
 							if (ByName && item.FullName == value)
 							{
 								success = true;
-								controller.DefaultPlaybackDevice = item;
+								if (item.IsCaptureDevice)
+								{
+									controller.DefaultCaptureDevice = item;
+                                    Console.WriteLine($"Successfully changed default audio capture device to '{item.FullName}'");
+                                }
+								else
+								{
+                                    controller.DefaultPlaybackDevice = item;
+                                    Console.WriteLine($"Successfully changed default audio playback device to '{item.FullName}'");
+                                }
                                 Console.WriteLine("Successfully changed default audio device");
                                 break;
 							}
 							else if(id == selId)
 							{
 								success = true;
-								controller.DefaultPlaybackDevice = item;
-                                Console.WriteLine($"Successfully changed default audio device to '{item.FullName}'");
+                                if (item.IsCaptureDevice)
+                                {
+                                    controller.DefaultCaptureDevice = item;
+                                    Console.WriteLine($"Successfully changed default audio capture device to '{item.FullName}'");
+                                }
+                                else
+                                {
+                                    controller.DefaultPlaybackDevice = item;
+                                    Console.WriteLine($"Successfully changed default audio playback device to '{item.FullName}'");
+                                }
                                 break;
 							}
                             id++;
@@ -145,7 +162,8 @@ Licensed under MIT License");
 					try
 					{
 						var controller = new AudioSwitcher.AudioApi.CoreAudio.CoreAudioController();
-						Console.WriteLine("Default audio device full name is '" + controller.DefaultPlaybackDevice.FullName + "'");
+						Console.WriteLine($"Default playback audio device full name is '{controller.DefaultPlaybackDevice.FullName}'");
+						Console.WriteLine($"Default capture audio device full name is '{controller.DefaultCaptureDevice.FullName}'");
 					}
 					catch (Exception ex)
 					{
@@ -257,7 +275,7 @@ Licensed under MIT License");
 
                             int id = 0;
 
-                            foreach (var item in controller.GetPlaybackDevices())
+                            foreach (var item in controller.GetDevices())
                             {
                                 if (item.State == AudioSwitcher.AudioApi.DeviceState.Disabled || item.State == AudioSwitcher.AudioApi.DeviceState.Unplugged || item.State == AudioSwitcher.AudioApi.DeviceState.NotPresent)
                                 { 

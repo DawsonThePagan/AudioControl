@@ -17,8 +17,8 @@ All arguments are non case sensitive.
 + /GetDefault = Get the default audio output device
 + /GetAll = Get all connected audio devices
 + /GetVolume ""{Device}"" = Get current volume level of default audio device, or set device to get it by ID or full name
-+ /SetDefault ""\<Device>"" = Set the default audio device, can be set by ID or by full name
-+ /SetVolume \<Level> ""{Device}"" = Set the volume level of the default audio device, or set device to get it by ID or full name
++ /SetDefault ""\<Device>"" = Set the default audio playback or capture device, can be set by ID or by full name. When setting capture device you must use ID for it to select the right device
++ /SetVolume \<Level> ""{Device}"" = Set the volume level of the default audio device, or set device to get it by ID or full name. When setting capture device you must use ID for it to select the right device
 
 Be careful when setting default. Its suggested to run /GetAll first to double check your device name is correct
 
