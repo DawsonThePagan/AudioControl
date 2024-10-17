@@ -5,7 +5,7 @@ namespace AudioControl
 {
 	internal class Program
 	{
-		const string VERSION = "V1.0";
+		const string VERSION = "V1.1a";
 
 		// Return codes
 		const int RET_OK = 0;
@@ -68,9 +68,9 @@ Arguments:
 All arguments are non case sensitive.
   /GetDefault = Get the default audio output device
   /GetAll = Get all connected audio devices
-  /GetVolume = Get current volume level of default audio device
-  /SetDefault ""<Device name>"" = Set the default audio device
-  /SetVolume <Level> ""{Device}"" = Set the volume level of the default audio device, or any device by setting device
+  /GetVolume ""{Device}"" = Get current volume level of default audio device, or set device to get it by ID or full name
+  /SetDefault ""<Device>"" = Set the default audio device, can be set by ID or by full name
+  /SetVolume <Level> ""{Device}"" = Set the volume level of the default audio device, or set device to get it by ID or full name
 Be careful when setting default. Its suggested to run /GetAll first to double check your device name is correct
 
 Developed by Bailey-Tyreese Dawson as part of BatchExtensions
@@ -96,18 +96,35 @@ Licensed under MIT License");
 					try
 					{
 						var controller = new AudioSwitcher.AudioApi.CoreAudio.CoreAudioController();
-						foreach (var item in controller.GetPlaybackDevices())
-						{
-							if (item.State == AudioSwitcher.AudioApi.DeviceState.Disabled && item.State == AudioSwitcher.AudioApi.DeviceState.Unplugged && item.State == AudioSwitcher.AudioApi.DeviceState.NotPresent)
-								continue;
+						bool ByName = true;
 
-							if (item.FullName == value)
+						if(int.TryParse(value, out int selId))
+						{
+							ByName = false;
+						}
+
+						int id = 0;
+                        foreach (var item in controller.GetPlaybackDevices())
+						{
+							if (item.State == AudioSwitcher.AudioApi.DeviceState.Disabled || item.State == AudioSwitcher.AudioApi.DeviceState.Unplugged || item.State == AudioSwitcher.AudioApi.DeviceState.NotPresent)
+                                continue;
+
+							if (ByName && item.FullName == value)
 							{
 								success = true;
 								controller.DefaultPlaybackDevice = item;
-								break;
+                                Console.WriteLine("Successfully changed default audio device");
+                                break;
 							}
-						}
+							else if(id == selId)
+							{
+								success = true;
+								controller.DefaultPlaybackDevice = item;
+                                Console.WriteLine($"Successfully changed default audio device to '{item.FullName}'");
+                                break;
+							}
+                            id++;
+                        }
 					}
 					catch (Exception ex)
 					{
@@ -121,7 +138,7 @@ Licensed under MIT License");
 						return RET_ERR_USER;
 					}
 
-					Console.WriteLine("Successfully changed default audio device");
+					
 					break;
 
 				case GET_DEFAULT:
@@ -149,17 +166,33 @@ Licensed under MIT License");
 						else
 						{
 							bool found = false;
+							int SelId = -1;
+                            bool ByName = true;
+							 
+                            if (int.TryParse(device, out SelId))
+                            {
+                                ByName = false;
+                            }
+
+                            int id = 0;
                             foreach (var item in controller.GetPlaybackDevices())
                             {
-                                if (item.State == AudioSwitcher.AudioApi.DeviceState.Disabled && item.State == AudioSwitcher.AudioApi.DeviceState.Unplugged && item.State == AudioSwitcher.AudioApi.DeviceState.NotPresent)
-                                    continue;
+								if (item.State == AudioSwitcher.AudioApi.DeviceState.Disabled || item.State == AudioSwitcher.AudioApi.DeviceState.Unplugged || item.State == AudioSwitcher.AudioApi.DeviceState.NotPresent)
+									continue;
 
-                                if (item.FullName == device)
-                                {
-                                    Console.WriteLine("Volume level is " + item.Volume);
+								if (ByName && item.FullName == device)
+								{
+									Console.WriteLine("Volume level is " + item.Volume);
 									found = true;
+									break;
+								}
+								else if (id == SelId)
+								{
+									Console.WriteLine($"Volume level of '{item.FullName}' is {item.Volume}");
+                                    found = true;
                                     break;
                                 }
+								id++;
                             }
 
 							if(!found)
@@ -179,10 +212,14 @@ Licensed under MIT License");
 					try
 					{
 						var controller = new AudioSwitcher.AudioApi.CoreAudio.CoreAudioController();
+						int id = 0;
 						foreach (var item in controller.GetDevices())
 						{
 							if (item.State != AudioSwitcher.AudioApi.DeviceState.Disabled && item.State != AudioSwitcher.AudioApi.DeviceState.Unplugged && item.State != AudioSwitcher.AudioApi.DeviceState.NotPresent)
-								Console.WriteLine("Name: '" + item.FullName + "' | Type: " + item.DeviceType + " | Volume: " + item.Volume);
+							{
+								Console.WriteLine($"Name: '{item.FullName}' | Id: {id} | Type: {item.DeviceType} | Volume: {item.Volume}");
+                                id++;
+                            }
 						}
 					}
 					catch (Exception ex)
@@ -210,17 +247,38 @@ Licensed under MIT License");
                         else
                         {
 							bool found = false;
+							int selId = -1;
+                            bool ByName = true;
+
+                            if (int.TryParse(device, out selId))
+                            {
+                                ByName = false;
+                            }
+
+                            int id = 0;
+
                             foreach (var item in controller.GetPlaybackDevices())
                             {
-                                if (item.State == AudioSwitcher.AudioApi.DeviceState.Disabled && item.State == AudioSwitcher.AudioApi.DeviceState.Unplugged && item.State == AudioSwitcher.AudioApi.DeviceState.NotPresent)
-                                    continue;
+                                if (item.State == AudioSwitcher.AudioApi.DeviceState.Disabled || item.State == AudioSwitcher.AudioApi.DeviceState.Unplugged || item.State == AudioSwitcher.AudioApi.DeviceState.NotPresent)
+                                { 
+									continue; 
+								}
 
-                                if (item.FullName == device)
+                                if (ByName && item.FullName == device)
                                 {
                                     item.Volume = value_converted;
+                                    Console.WriteLine("Successfully set volume level");
                                     found = true;
                                     break;
                                 }
+                                else if (id == selId)
+                                {
+									item.Volume = value_converted;
+                                    Console.WriteLine($"Successfully set volume level of '{item.FullName}'");
+                                    found = true;
+                                    break;
+                                }
+                                id++;
                             }
 
                             if (!found)
@@ -234,7 +292,6 @@ Licensed under MIT License");
 						Console.WriteLine("Failed to set the volume. " + ex.Message);
 						return RET_ERR_EXTERN;
 					}
-					Console.WriteLine("Successfully set volume level");
 					break;
 				default:
 					Console.WriteLine("Invalid argument, argument '" + action + "' is not an accepted argument.");
