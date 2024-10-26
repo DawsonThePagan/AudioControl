@@ -5,7 +5,7 @@ namespace AudioControl
 {
 	internal class Program
 	{
-		const string VERSION = "V1.1";
+		const string VERSION = "V1.2";
 
 		// Return codes
 		const int RET_OK = 0;
@@ -22,6 +22,9 @@ namespace AudioControl
 
 		const string ARG_START_GET = "/GET";
 		const string ARG_START_SET = "/SET";
+
+		const string ARG_TYPE_CAP = "capture";
+		const string ARG_TYPE_PLAY = "playback";
 
 		static int Main(string[] args)
 		{
@@ -69,9 +72,13 @@ All arguments are non case sensitive.
   /GetDefault = Get the default audio output device
   /GetAll = Get all connected audio devices
   /GetVolume ""{Device}"" = Get current volume level of default audio device, or set device to get it by ID or full name
-  /SetDefault ""<Device>"" = Set the default audio playback or capture device, can be set by ID or by full name. When setting capture device you must use ID for it to select the right device
+  /SetDefault <Type> ""<Device>"" = Set the default audio playback or capture device, can be set by ID or by full name. See type section for more information on that. When setting capture device you must use ID for it to select the right device
   /SetVolume <Level> ""{Device}"" = Set the volume level of the default audio device, or set device to get it by ID or full name. When setting capture device you must use ID for it to select the right device
 Be careful when setting default. Its suggested to run /GetAll first to double check your device name is correct
+
+Type:
+Select what type of device you want to use. Many audio devices both have input and output enabled, this allows you to set them independently. 
+  
 
 Developed by Bailey-Tyreese Dawson as part of BatchExtensions
 Licensed under MIT License");
@@ -97,6 +104,29 @@ Licensed under MIT License");
 					{
 						var controller = new AudioSwitcher.AudioApi.CoreAudio.CoreAudioController();
 						bool ByName = true;
+						bool Capture = false;
+						device = null;
+						string type;
+
+						if (args.Length > 2)
+						{
+							value = args[2].Trim();
+							type = args[1].Trim().ToLower();
+
+							if(type == ARG_TYPE_CAP)
+							{
+								Capture = true;
+							}
+							else if (type == ARG_TYPE_PLAY)
+							{
+								Capture = false;
+							}
+							else
+							{
+								Console.WriteLine("Invalid type given");
+								return RET_ERR_USER;
+							}
+						}
 
 						if(int.TryParse(value, out int selId))
 						{
@@ -110,35 +140,51 @@ Licensed under MIT License");
                                 continue;
 
 							if (ByName && item.FullName == value)
-							{
-								success = true;
-								if (item.IsCaptureDevice)
+							{ 
+								if (Capture)
 								{
-									controller.DefaultCaptureDevice = item;
-                                    Console.WriteLine($"Successfully changed default audio capture device to '{item.FullName}'");
+                                    if (item.IsCaptureDevice)
+                                    {
+                                        success = true;
+                                        controller.DefaultCaptureDevice = item;
+                                        Console.WriteLine($"Successfully changed default audio capture device to '{item.FullName}'");
+                                        break;
+                                    }
                                 }
 								else
 								{
-                                    controller.DefaultPlaybackDevice = item;
-                                    Console.WriteLine($"Successfully changed default audio playback device to '{item.FullName}'");
+
+                                    if (item.IsPlaybackDevice)
+                                    {
+                                        success = true;
+                                        controller.DefaultPlaybackDevice = item;
+                                        Console.WriteLine($"Successfully changed default audio playback device to '{item.FullName}'");
+                                        break;
+                                    }
                                 }
-                                Console.WriteLine("Successfully changed default audio device");
-                                break;
 							}
 							else if(id == selId)
 							{
-								success = true;
-                                if (item.IsCaptureDevice)
-                                {
-                                    controller.DefaultCaptureDevice = item;
-                                    Console.WriteLine($"Successfully changed default audio capture device to '{item.FullName}'");
+								if (Capture)
+								{
+									if (item.IsCaptureDevice)
+									{
+                                        success = true;
+                                        controller.DefaultCaptureDevice = item;
+										Console.WriteLine($"Successfully changed default audio capture device to '{item.FullName}'");
+										break;
+									}
+								}
+								else
+								{
+                                    if (item.IsPlaybackDevice)
+                                    {
+                                        success = true;
+                                        controller.DefaultPlaybackDevice = item;
+                                        Console.WriteLine($"Successfully changed default audio playback device to '{item.FullName}'");
+                                        break;
+                                    }
                                 }
-                                else
-                                {
-                                    controller.DefaultPlaybackDevice = item;
-                                    Console.WriteLine($"Successfully changed default audio playback device to '{item.FullName}'");
-                                }
-                                break;
 							}
                             id++;
                         }
@@ -151,8 +197,8 @@ Licensed under MIT License");
 
 					if (!success)
 					{
-						Console.WriteLine("Could not find the audio device specified");
-						return RET_ERR_USER;
+						Console.WriteLine($"Could not find the audio device specified '{value}'");
+                        return RET_ERR_USER;
 					}
 
 					
